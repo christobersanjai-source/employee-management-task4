@@ -1,10 +1,8 @@
-
-
 \# Employee Management System — Task 4
 
 
 
-A REST API application built with \*\*Python, FastAPI, SQLAlchemy, PostgreSQL, Alembic, and pytest\*\*. This project extends the employee directory with salary and attendance tracking, synthetic HR data seeding, and CSV exports.
+A REST API application built with \*\*Python, FastAPI, SQLAlchemy, PostgreSQL, Alembic, and pytest\*\*. This project extends the employee management system with salary tracking, attendance tracking, reproducible synthetic HR data generation, and CSV exports.
 
 
 
@@ -12,7 +10,7 @@ A REST API application built with \*\*Python, FastAPI, SQLAlchemy, PostgreSQL, A
 
 
 
-\### Employee \& Team APIs
+\### Employee and Team APIs
 
 \- Create, retrieve, update, and soft-delete employees.
 
@@ -26,7 +24,7 @@ A REST API application built with \*\*Python, FastAPI, SQLAlchemy, PostgreSQL, A
 
 
 
-\### Salary \& Attendance
+\### Salary and Attendance
 
 \- List salary records with pagination.
 
@@ -36,19 +34,25 @@ A REST API application built with \*\*Python, FastAPI, SQLAlchemy, PostgreSQL, A
 
 \- Store annual salary, currency, work date, attendance status, and hours worked.
 
+\- Link salary and attendance records to employee IDs.
 
 
-\### Data \& Database
 
-\- PostgreSQL database managed through Docker Compose.
+\### Data Processing and Database
 
-\- SQLAlchemy models and Alembic database migrations.
+\- Use Pandas to load and process the HR analytics dataset.
 
-\- Synthetic employee, salary, and attendance data.
+\- Use Faker to generate synthetic employee information.
 
-\- CSV exports for employees, salaries, and attendance.
+\- Generate salary and attendance records for synthetic employees.
 
-\- Automated tests using pytest.
+\- Use a fixed random seed for reproducible data generation.
+
+\- Support repeatable seeding without creating duplicate records.
+
+\- Export employee, salary, and attendance data to CSV files.
+
+\- Use PostgreSQL, SQLAlchemy, and Alembic migrations.
 
 
 
@@ -68,13 +72,13 @@ A REST API application built with \*\*Python, FastAPI, SQLAlchemy, PostgreSQL, A
 
 \- Pydantic
 
-\- Docker and Docker Compose
-
-\- pytest
-
 \- Pandas
 
 \- Faker
+
+\- Docker and Docker Compose
+
+\- pytest
 
 
 
@@ -110,7 +114,15 @@ employee\_management\_task4\_full/
 
 │   ├── raw/
 
+│   │   └── README.md
+
 │   └── exports/
+
+│       ├── employees.csv
+
+│       ├── salaries.csv
+
+│       └── attendance.csv
 
 ├── scripts/
 
@@ -119,6 +131,8 @@ employee\_management\_task4\_full/
 ├── tests/
 
 ├── .env.example
+
+├── .gitignore
 
 ├── docker-compose.yml
 
@@ -138,11 +152,13 @@ employee\_management\_task4\_full/
 
 \### Prerequisites
 
+
+
 \- Python
 
-\- Docker Desktop
-
 \- Git
+
+\- Docker Desktop
 
 
 
@@ -150,7 +166,7 @@ employee\_management\_task4\_full/
 
 
 
-In PowerShell, from the project folder:
+Open PowerShell in the project directory and run:
 
 
 
@@ -170,7 +186,7 @@ Configure the required database URL and secret key in `.env` according to the pr
 
 
 
-Make sure Docker Desktop is running, then execute:
+Make sure Docker Desktop is running.
 
 
 
@@ -196,11 +212,11 @@ docker compose logs --tail=50 api
 
 
 
-The Task 4 stack uses host port \*\*5433\*\* for PostgreSQL and host port \*\*8001\*\* for the API to avoid conflicts with the Task 3 stack.
+The Task 4 stack uses host port \*\*5433\*\* for PostgreSQL and host port \*\*8001\*\* for the API.
 
 
 
-\### 3. Open the API documentation
+\### 3. Open API documentation
 
 
 
@@ -260,7 +276,19 @@ Invoke-RestMethod http://localhost:8001/health
 
 
 
-List employees with pagination, department filtering, and search:
+List employees:
+
+
+
+```text
+
+GET /employees?page=1\&size=20
+
+```
+
+
+
+Filter employees by department and search term:
 
 
 
@@ -284,7 +312,7 @@ GET /salaries?page=1\&size=20
 
 
 
-List attendance records for a particular employee:
+List attendance records for an employee:
 
 
 
@@ -296,7 +324,7 @@ GET /attendance?page=1\&size=20\&employee\_id=1
 
 
 
-List responses include pagination metadata such as `items`, `total`, `page`, and `size`, where applicable.
+List responses provide pagination metadata where applicable.
 
 
 
@@ -316,15 +344,69 @@ docker compose exec api alembic upgrade head
 
 
 
-The migration history includes the initial employee tables and the additional salary and attendance tables.
+The migration history includes the employee tables and the additional salary and attendance tables.
 
 
 
-\## Synthetic Data and CSV Exports
+\## HR Dataset Source, License, and Processing
 
 
 
-The project includes a data seeding script for synthetic employee, salary, and attendance records.
+\### Dataset Source
+
+
+
+The project uses the IBM HR Analytics Employee Attrition \& Performance dataset available on Kaggle:
+
+
+
+https://www.kaggle.com/datasets/pavansubhasht/ibm-hr-analytics-attrition-dataset
+
+
+
+Expected raw filename:
+
+
+
+`WA\_Fn-UseC\_-HR-Employee-Attrition.csv`
+
+
+
+Place the dataset in `data/raw/`.
+
+
+
+\*\*License and redistribution:\*\* Check the dataset page and its applicable license or usage terms before redistributing the original CSV. The raw dataset is excluded from Git tracking unless redistribution is confirmed to be permitted. The project repository contains instructions for obtaining the dataset rather than the raw CSV itself.
+
+
+
+\### Data Cleaning and Mapping
+
+
+
+The seed script uses Pandas to load and process the source CSV. The source dataset supplies HR-related attributes, such as department and job role, for data processing.
+
+
+
+\- Load the source CSV using Pandas.
+
+\- Inspect and process department and job-role values used by the seed workflow.
+
+\- Use valid department/job-role combinations to support the database mapping.
+
+\- Generate synthetic employee names, work email addresses, phone numbers, and joining dates with Faker.
+
+\- Create synthetic employee records rather than copying real employee identities from the source dataset.
+
+\- Generate linked salary and attendance records using the synthetic employee IDs.
+
+
+
+The exact cleaning and validation rules are implemented in `scripts/seed.py`.
+
+
+
+\## Synthetic Data Generation and Reproducibility
 
 
 
@@ -334,33 +416,85 @@ Run the seed script inside the API container:
 
 ```powershell
 
-docker compose exec api python scripts/seed.py
+docker compose exec api python -m scripts.seed
 
 ```
 
 
 
-The script creates or checks synthetic employee records and generates CSV exports.
+The script uses a fixed random seed (`20261014`) to support reproducible synthetic data generation.
 
 
 
-Expected export files:
+The current configuration targets \*\*300 synthetic employees\*\*, corresponding salary records, and attendance records for the previous three complete calendar months.
 
 
 
-\- `data/exports/employees.csv`
-
-\- `data/exports/salaries.csv`
-
-\- `data/exports/attendance.csv`
+The seed workflow is designed to check existing records before creating them, so rerunning it should not increase the record counts or create duplicates. Database counts should be checked after rerunning the script to verify idempotency.
 
 
 
-The current seed configuration targets 300 synthetic employees and attendance records covering the previous three complete calendar months.
+Expected successful output includes:
 
 
 
-The raw HR analytics dataset and its documentation are located under `data/raw/`.
+```text
+
+Seed complete: 300 synthetic employees checked/created.
+
+CSV exports written: employees=300, salaries=300, attendance=19800
+
+```
+
+
+
+Actual output may vary if the seed configuration or dataset changes.
+
+
+
+\## CSV Exports
+
+
+
+The seed script writes the following CSV files:
+
+
+
+| File | Description |
+
+|---|---|
+
+| `data/exports/employees.csv` | Synthetic employee records |
+
+| `data/exports/salaries.csv` | Salary records linked to employees |
+
+| `data/exports/attendance.csv` | Attendance records linked to employees |
+
+
+
+The exports support data analysis, reporting, and reuse in other HR-related applications.
+
+
+
+\## Reusing the Data Workflow in Other Domains
+
+
+
+The same data-generation and export approach can be adapted for other domains, including:
+
+
+
+\- \*\*Retail:\*\* synthetic customers, products, orders, and sales reports.
+
+\- \*\*Education:\*\* synthetic students, courses, attendance, and marks.
+
+\- \*\*Healthcare administration:\*\* synthetic staff schedules and attendance, using appropriate privacy safeguards.
+
+\- \*\*Inventory management:\*\* synthetic products, stock movements, and reorder reports.
+
+
+
+For another domain, replace the HR-specific source fields and database mappings with the relevant entities and relationships. Continue using synthetic data where appropriate and check the source dataset's license before redistribution.
 
 
 
@@ -380,7 +514,7 @@ docker compose exec api python -m pytest -v
 
 
 
-The test suite has previously completed successfully with \*\*11 passing tests\*\*.
+The test suite previously completed successfully with 11 passing tests. Run it again after changes to confirm the current result.
 
 
 
@@ -412,7 +546,7 @@ MSc Computer Science Graduate | Aspiring Python Developer
 
 
 
-GitHub: \[christobersanjai-source](https://github.com/christobersanjai-source)
+GitHub: https://github.com/christobersanjai-source
 
 
 
@@ -420,7 +554,7 @@ GitHub: \[christobersanjai-source](https://github.com/christobersanjai-source)
 
 
 
-This project demonstrates my practical learning and development skills in Python, FastAPI, SQLAlchemy, PostgreSQL, REST API development, database migrations, automated testing, and synthetic data processing.
+This project demonstrates practical skills in Python, FastAPI, REST API development, SQLAlchemy, PostgreSQL, database migrations, automated testing, Pandas-based data processing, synthetic data generation, and CSV exports.
 
 
 
