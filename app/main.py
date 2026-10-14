@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from app.db.session import get_db
-from app.models import Employee, Department, Role
+from app.db.session import get_db 
+from app.models import Employee, Department, Role, Salary, Attendance
 from app.schemas import EmployeeCreate, EmployeeUpdate, EmployeeRead, EmployeePage, DepartmentRead, RoleRead
 from app.services import employee_service as service
 
@@ -56,3 +56,70 @@ def list_direct_reports(employee_id: int, db: Session = Depends(get_db)):
 @app.get("/roles", response_model=list[RoleRead])
 def list_roles(db: Session = Depends(get_db)):
     return db.query(Role).order_by(Role.id).all()
+
+@app.get("/salaries")
+def list_salaries(
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    query = db.query(Salary).join(Employee)
+    total = query.count()
+    items = (
+        query.order_by(Salary.id)
+        .offset((page - 1) * size)
+        .limit(size)
+        .all()
+    )
+
+    return {
+        "items": [
+            {
+                "id": salary.id,
+                "employee_id": salary.employee_id,
+                "annual_salary": float(salary.annual_salary),
+                "currency": salary.currency,
+            }
+            for salary in items
+        ],
+        "total": total,
+        "page": page,
+        "size": size,
+    }
+
+
+@app.get("/attendance")
+def list_attendance(
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    employee_id: int | None = Query(None, ge=1),
+    db: Session = Depends(get_db),
+):
+    query = db.query(Attendance).join(Employee)
+
+    if employee_id is not None:
+        query = query.filter(Attendance.employee_id == employee_id)
+
+    total = query.count()
+    items = (
+        query.order_by(Attendance.work_date.desc(), Attendance.id)
+        .offset((page - 1) * size)
+        .limit(size)
+        .all()
+    )
+
+    return {
+        "items": [
+            {
+                "id": record.id,
+                "employee_id": record.employee_id,
+                "work_date": record.work_date.isoformat(),
+                "status": record.status,
+                "hours_worked": record.hours_worked,
+            }
+            for record in items
+        ],
+        "total": total,
+        "page": page,
+        "size": size,
+    }
