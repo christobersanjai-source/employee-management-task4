@@ -1,0 +1,1 @@
+Place the Kaggle IBM HR Analytics CSV here as `WA_Fn-UseC_-HR-Employee-Attrition.csv`. Do not commit the raw dataset unless its license permits redistribution.
