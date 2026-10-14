@@ -5,3 +5,5 @@ __pycache__/
 .venv/
 venv/
 alembic/versions/__pycache__/
+
+data/raw/WA_Fn-UseC_-HR-Employee-Attrition.csv
